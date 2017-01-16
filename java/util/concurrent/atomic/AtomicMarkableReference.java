@@ -47,6 +47,7 @@ package java.util.concurrent.atomic;
  * @author Doug Lea
  * @param <V> The type of object referred to by this reference
  */
+//原子更新带有标记位的引用类型。可以原子的更新一个布尔类型的标记位和引用类型。
 public class AtomicMarkableReference<V> {
 
     private static class Pair<T> {

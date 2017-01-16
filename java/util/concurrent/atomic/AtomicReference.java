@@ -46,9 +46,11 @@ import sun.misc.Unsafe;
  * @author Doug Lea
  * @param <V> The type of object referred to by this reference
  */
+//原子更新引用类型,对"对象"进行原子操作。http://ifeve.com/java-atomic/
 public class AtomicReference<V> implements java.io.Serializable {
     private static final long serialVersionUID = -1848883965231344442L;
 
+    //获取Unsafe对象，Unsafe的作用是提供CAS(如compareAndSet函数)操作
     private static final Unsafe unsafe = Unsafe.getUnsafe();
     private static final long valueOffset;
 
@@ -73,6 +75,7 @@ public class AtomicReference<V> implements java.io.Serializable {
     /**
      * Creates a new AtomicReference with null initial value.
      */
+    // 使用 null 初始值创建新的 AtomicReference。
     public AtomicReference() {
     }
 
@@ -100,6 +103,7 @@ public class AtomicReference<V> implements java.io.Serializable {
      * @param newValue the new value
      * @since 1.6
      */
+    //最终设置为给定值。
     public final void lazySet(V newValue) {
         unsafe.putOrderedObject(this, valueOffset, newValue);
     }
@@ -112,6 +116,7 @@ public class AtomicReference<V> implements java.io.Serializable {
      * @return {@code true} if successful. False return indicates that
      * the actual value was not equal to the expected value.
      */
+    //如果当前值 == 预期值，则以原子方式将该值设置为给定的更新值。
     public final boolean compareAndSet(V expect, V update) {
         return unsafe.compareAndSwapObject(this, valueOffset, expect, update);
     }
@@ -128,6 +133,7 @@ public class AtomicReference<V> implements java.io.Serializable {
      * @param update the new value
      * @return {@code true} if successful
      */
+    //如果当前值 == 预期值，则以原子方式将该值设置为给定的更新值。
     public final boolean weakCompareAndSet(V expect, V update) {
         return unsafe.compareAndSwapObject(this, valueOffset, expect, update);
     }
@@ -139,6 +145,7 @@ public class AtomicReference<V> implements java.io.Serializable {
      * @return the previous value
      */
     @SuppressWarnings("unchecked")
+    //以原子方式设置为给定值，并返回旧值。
     public final V getAndSet(V newValue) {
         return (V)unsafe.getAndSetObject(this, valueOffset, newValue);
     }

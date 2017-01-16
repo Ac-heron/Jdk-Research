@@ -41,6 +41,49 @@ package java.lang.annotation;
  * @author  Josh Bloch
  * @since   1.5
  */
+
+/**
+ * “注解”全部的意义:提供额外的信息与操作手段
+ * 如：设置当前登录用户的注解 
+ *   @Target({ElementType.PARAMETER})
+     @Retention(RetentionPolicy.RUNTIME)
+     @Documented
+    public @interface CurrentUser {
+      //当前用户在request中的名字
+      String value() default "user";
+    }
+  * 
+ *====内置注解:====
+ * 
+ 1.
+ 方法注解，表示此注解修饰的方法覆盖了父类或是接口的方法, 如果不是这样，则输出警告
+ @Override
+
+ 2.对于此注解所修饰的对象（类、域、方法等）, 当你使用了它们时编译器将输出“已废弃”警告
+ @Deprecated
+
+ 3.关闭警告，通过给此注解的元素赋值  可以关闭特定警告
+ @SuppressWarnings
+ 
+ ----------------------------------------------------------------
+ ====元注解==== 用来注解注解的注解
+ 1.定义注解所能作用的目标，说明该注解能作用于何种对象（类、方法、域……之类）。
+ @Target
+
+ 2.
+ 定义注解保存级别
+ // 1.源代码注解，被编译器丢弃
+ // 2.类注解，class文件中可用，被VM丢弃
+ // 3.运行时可用，搭配反射
+ @Retention
+
+ 3.标志将此注解包含至javadoc中
+ @Documented
+
+ 4.说明假如此注解是类注解而且你在父类中使用此注解，那么子类将会继承此注解
+ @Inherited
+ ---------------------------------------------------
+ */
 public interface Annotation {
     /**
      * Returns true if the specified object represents an annotation

@@ -81,6 +81,7 @@ import sun.reflect.Reflection;
  * @param <T> The type of the object holding the updatable field
  * @param <V> The type of the field
  */
+//原子更新引用类型里的字段
 public abstract class AtomicReferenceFieldUpdater<T,V> {
 
     /**

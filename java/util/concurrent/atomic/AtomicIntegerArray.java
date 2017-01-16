@@ -46,6 +46,7 @@ import sun.misc.Unsafe;
  * @since 1.5
  * @author Doug Lea
  */
+//原子更新整型数组里的元素。
 public class AtomicIntegerArray implements java.io.Serializable {
     private static final long serialVersionUID = 2862133569453604235L;
 
@@ -160,6 +161,7 @@ public class AtomicIntegerArray implements java.io.Serializable {
      * @return {@code true} if successful. False return indicates that
      * the actual value was not equal to the expected value.
      */
+    //如果当前值等于预期值，则以原子方式将数组位置i的元素设置成update值。
     public final boolean compareAndSet(int i, int expect, int update) {
         return compareAndSetRaw(checkedByteOffset(i), expect, update);
     }
