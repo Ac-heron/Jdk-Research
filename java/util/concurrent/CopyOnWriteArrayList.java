@@ -88,6 +88,7 @@ import java.util.function.UnaryOperator;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
+//CopyOnWriteArrayList适合读多写少的场景。通过空间换时间的方式来提高读的效率并保证写的安全性。
 public class CopyOnWriteArrayList<E>
     implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
     private static final long serialVersionUID = 8673264195747942595L;
@@ -397,29 +398,37 @@ public class CopyOnWriteArrayList<E>
     }
 
     /**
+     * 更新指定位置元素
      * Replaces the element at the specified position in this list with the
      * specified element.
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E set(int index, E element) {
+        //加锁
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
             Object[] elements = getArray();
+            //获取需要更新的元素
             E oldValue = get(elements, index);
 
+            // 需更新的值不等于原值(注意此处的不等是==，不是equals()，即oldValue和element必须是引用同一个对象才可)
             if (oldValue != element) {
                 int len = elements.length;
+                // 复制一个新的数组，并将index更新成新的值，更新引用
                 Object[] newElements = Arrays.copyOf(elements, len);
                 newElements[index] = element;
                 setArray(newElements);
             } else {
                 // Not quite a no-op; ensures volatile write semantics
+                // 此处由于更新的值与原值是同一个对象，所以其实可不更新引用
+                // 从注释可以看出更新的目的是出于写volatile变量
                 setArray(elements);
             }
             return oldValue;
         } finally {
+            //释放锁
             lock.unlock();
         }
     }
@@ -453,27 +462,37 @@ public class CopyOnWriteArrayList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public void add(int index, E element) {
+        //加锁
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+            //读取底层数组对象
             Object[] elements = getArray();
             int len = elements.length;
             if (index > len || index < 0)
                 throw new IndexOutOfBoundsException("Index: "+index+
                                                     ", Size: "+len);
             Object[] newElements;
-            int numMoved = len - index;
-            if (numMoved == 0)
+            // 由于数组的长度不可变，所以插入一个元素需要新建一个新的数组以容纳新插入的元素
+            // 所以需要将原数组复制到新的数组
+            int numMoved = len - index;// 需要移动的元素的开始位置(要插入位置的下一个位置)
+            if (numMoved == 0)// ==0表示插入的位置是数组的最后一个位置，所以该位置前面的元素原样不动复制到新的数组即可
+                // 这里通过复制elements数组生成一个新的数组，注意这里新的数组长度是原数组+1，所以新数组的最后一个元素是NULL
                 newElements = Arrays.copyOf(elements, len + 1);
             else {
+                // 将原数组的0~index-1原样复制到新的数组中，
+                // 而index之后的元素对应复制到新数组的index+1之后，即中间空出一个位置用于放置带插入元素
                 newElements = new Object[len + 1];
                 System.arraycopy(elements, 0, newElements, 0, index);
                 System.arraycopy(elements, index, newElements, index + 1,
                                  numMoved);
             }
+            // 将element插入到新的数组
             newElements[index] = element;
+            // 将更新底层数组的引用，由于array是volatile的，所以对其的修改能够立即被后续线程可见
             setArray(newElements);
         } finally {
+            //释放锁
             lock.unlock();
         }
     }
@@ -485,6 +504,7 @@ public class CopyOnWriteArrayList<E>
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
+    //删除指定位置的元素
     public E remove(int index) {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -492,8 +512,8 @@ public class CopyOnWriteArrayList<E>
             Object[] elements = getArray();
             int len = elements.length;
             E oldValue = get(elements, index);
-            int numMoved = len - index - 1;
-            if (numMoved == 0)
+            int numMoved = len - index - 1;//// 需要移动的元素的个数
+            if (numMoved == 0)//==0表示删除的位置是数组的最后一个元素，只需要简单的复制原数组的len-1个元素到新数组即可
                 setArray(Arrays.copyOf(elements, len - 1));
             else {
                 Object[] newElements = new Object[len - 1];
@@ -521,6 +541,7 @@ public class CopyOnWriteArrayList<E>
      * @param o element to be removed from this list, if present
      * @return {@code true} if this list contained the specified element
      */
+    //:删除指定元素，而非指定位置的元素
     public boolean remove(Object o) {
         Object[] snapshot = getArray();
         int index = indexOf(o, snapshot, 0, snapshot.length);

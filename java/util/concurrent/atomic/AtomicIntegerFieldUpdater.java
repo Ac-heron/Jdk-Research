@@ -46,6 +46,7 @@ import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 
 /**
+ * 利用反射原理，实现对一个类的某个字段的原子化更新，该字段类型必须和Updater要求的一致，例如如果使用 AtomicIntegerFieldUpdater，字段必须是Integer类型，而且必须有volatile限定符。Updater的可以调用的方 法和数字类型完全一致，额外增加一个该类型的对象为参数，updater就会更新该对象的那个字段了。
  * A reflection-based utility that enables atomic updates to
  * designated {@code volatile int} fields of designated classes.
  * This class is designed for use in atomic data structures in which
